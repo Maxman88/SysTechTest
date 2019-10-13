@@ -6,26 +6,30 @@ using System.Runtime.CompilerServices;
 
 namespace SysTechTest.dal
 {
-    public class AccessType
-    {
-        [Key]
-        public int Id { get; set; }
-        public string TypeName { get; set; }
-    }
-    public class Group
-    {
-        [Key]
+    public class Group { 
         public int Id { get; set; }
         public string GroupName { get; set; }
     }
+    public class AccessType { 
+        public int Id { get; set; }
+        public string TypeName { get; set; }
+    }
+    public class GroupPaySystem
+    {
+        public int Id { get; set; }
+        public int GroupId { get; set; }
+        public bool Enable { get; set; }
+        public string Params { get; set; }
+    }
+
 
     public class Employee : INotifyPropertyChanged
     {
         private Int64 m_id = 0;
         private Int64 m_parentId = 0;
-        private byte m_groupId = 0;
+        private int m_groupId = 0;
         private string m_name = "Новый сотрудник";
-        private string m_dateOfEmployment = DateTime.Now.ToString();
+        private string m_dateOfEmployment = DateTimeUtils.DateToStr(DateTime.Now);
         private decimal m_baseRate = new decimal();
         private string m_login = "";
         private string m_password = "";
@@ -40,7 +44,7 @@ namespace SysTechTest.dal
             get { return m_parentId; }
             set { m_parentId = value; OnPropertyChanged(); }
         }
-        public byte GroupId {
+        public int GroupId {
             get { return m_groupId; }
             set { m_groupId = value; OnPropertyChanged(); }
         }

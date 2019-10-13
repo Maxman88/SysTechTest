@@ -12,6 +12,7 @@ namespace SysTechTest.dal
         public DbSet<Group> Groups { get; set; }
         public DbSet<AccessType> AccessTypes { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<GroupPaySystem> GroupPaySystems { get; set; }
         public bool HasChanges => ChangeTracker.HasChanges();
         public DbCtx() : base("name=DbConnection") {
             Configuration.AutoDetectChangesEnabled = true;
@@ -22,10 +23,11 @@ namespace SysTechTest.dal
                 var t1 = Groups.LoadAsync();
                 var t2 = AccessTypes.LoadAsync();
                 var t3 = Employees.LoadAsync();
-                var tasks = new List<Task>() { t1, t2, t3 };
+                var t4 = GroupPaySystems.LoadAsync();
+                var tasks = new List<Task>() { t1, t2, t3, t4 };
                 while (tasks.Count > 0)
                 {
-                    Task finished = await Task.WhenAny(tasks);
+                    Task finished = await Task.WhenAny(tasks).ConfigureAwait(false);
                     tasks.Remove(finished);
                 }
             }
@@ -40,10 +42,11 @@ namespace SysTechTest.dal
             string passHash = GetSHA256Hash(pass);
             var list = await Employees.SqlQuery(
                 "Select * from employees " +
-                "where Login == @p0 and Password == @p1", login, passHash).ToListAsync();
+                "where Login == @p0 and Password == @p1", login, passHash)
+                .ToListAsync().ConfigureAwait(false);
             return list.Count == 1 ? list[0] : null;
         }
-        private string GetSHA256Hash(string s) {
+        private static string GetSHA256Hash(string s) {
             if (string.IsNullOrEmpty(s))
             {
                 throw new ArgumentException("An empty string value cannot be hashed.");

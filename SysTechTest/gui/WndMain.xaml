@@ -5,8 +5,59 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SysTechTest"
         mc:Ignorable="d"
+        Language="ru"
         Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            
+        </Grid.ColumnDefinitions>
+        <TabControl>
+            <TabItem x:Name= "tab1" Header ="Admin">
+                <Grid Background="#FFE5E5E5">
+                    <StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="2">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Height="50" VerticalAlignment="Bottom">
+                            <Button Command="{Binding CmdAdd}" MinWidth="100">
+                                <Label Content="добавить"/>
+                            </Button>
+                            <Button Command="{Binding CmdRemove}" MinWidth="100">
+                                <Label Content="удалить"/>
+                            </Button>
+                            <Button Command="{Binding CmdEdit}" MinWidth="100">
+                                <Label Content="редактировать"/>
+                            </Button>
+                            <Button x:Name="btnSave" Command="{Binding CmdSave}" MinWidth="100">
+                                <Label Content="сохранить изменения"/>
+                            </Button>
+                        </StackPanel>
+                        <DataGrid ItemsSource="{Binding ListEmployees}" SelectedItem="{Binding SelectedEmployee}" 
+                      CanUserSortColumns="False" 
+                      SelectionMode="Single" 
+                      AutoGenerateColumns="False" FontFamily="Arial" 
+                      GridLinesVisibility="Vertical" CanUserAddRows="False" 
+                      CanUserDeleteRows="False" UseLayoutRounding="True" IsReadOnly="True"
+                      >
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Id" Binding = "{Binding Path=Id}"/>
+                                <DataGridTextColumn Header="Имя" Binding = "{Binding Path=Name}"/>
+                                <DataGridTextColumn Header="Дата приёма на работу" Binding = "{Binding DateOfEmployment, StringFormat=\{0:d\}}"/>
+                                <DataGridTextColumn Header="Группа" Binding = "{Binding Path=GroupId}"/>
+                                <DataGridTextColumn Header="Базовая Ставка" Binding = "{Binding BaseRate, StringFormat=\{0:C\}}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Salesman">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="Manager">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="Employee">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+
+        </TabControl>
+
     </Grid>
 </Window>
