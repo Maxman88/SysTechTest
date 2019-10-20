@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using SysTechTest.dal;
 
 namespace SysTechTest.PaySystems
@@ -33,23 +34,29 @@ namespace SysTechTest.PaySystems
             }
             return res;
         }
+
         private List<PayBase> BuildPaySystems(int groupId) {
+
+            //var t1 = new Params() { percentInAYear = 5M, maxPercent=40 };
+            //string tt = "{ \"percentInAYear\": 5, \"maxPercent\": 40 }";
+            //var p = JsonConvert.DeserializeObject<Params>(tt);
+            //string ff = JsonConvert.SerializeObject(p);
             List<PayBase> res = new List<PayBase>();
             switch ((DbHelpers.Group)groupId)
             {
                 case DbHelpers.Group.Employee :
                     res.Add(new PayBaseRate());
-                    res.Add(new PayExperience(3M, 30M));
+                    res.Add(new PayExperience(3, 30));
                     break;
                 case DbHelpers.Group.Manager:
                     res.Add(new PayBaseRate());
-                    res.Add(new PayExperience(5M, 40M));
-                    res.Add(new PayForSubordinates(0.5M, true));
+                    res.Add(new PayExperience(5, 40));
+                    res.Add(new PayForSubordinates(0.5M) { OnlyFirstLevelEnable = true });
                     break;
                 case DbHelpers.Group.Salesman:
                     res.Add(new PayBaseRate());
-                    res.Add(new PayExperience(1M, 35M));
-                    res.Add(new PayForSubordinates(3M, false));
+                    res.Add(new PayExperience(1, 35));
+                    res.Add(new PayForSubordinates(3) { OnlyFirstLevelEnable = false });
                     break;
                 default:
                     string msg = "BuildPaySystems for group id = " + groupId.ToString() + " is not implemented.";

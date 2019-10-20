@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Entity;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace SysTechTest.dal
@@ -9,22 +7,60 @@ namespace SysTechTest.dal
 {
     public class DbCtx : DbContext
     {
+        #region Сотрудники
+        /// <summary>
+        /// Список групп сотрудников
+        /// </summary>
         public DbSet<Group> Groups { get; set; }
-        public DbSet<AccessType> AccessTypes { get; set; }
+        /// <summary>
+        /// Список сотрудников
+        /// </summary>
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<GroupPaySystem> GroupPaySystems { get; set; }
+        #endregion
+        #region Оплата труда
+        /// <summary>
+        /// Список способов оплаты труда
+        /// </summary>
+        public DbSet<PaySystemDesc> PaySystems { get; set; }
+        /// <summary>
+        /// Параметры для оплаты труда по базовой ставке в разрезе групп
+        /// </summary>
+        public DbSet<PayBaseRateParam> PayBaseRateParams { get; set; }
+        /// <summary>
+        /// Параметры для оплаты труда за стаж в разрезе групп
+        /// </summary>
+        public DbSet<PayExperienceParam> PayExperienceParams { get; set; }
+        /// <summary>
+        /// Параметры для оплаты труда в разрезе групп процент от оплаты подчинённых
+        /// </summary>
+        public DbSet<PayForSubordinatesParam> PayForSubordinatesParams { get; set; }
+        #endregion
+        public DbSet<AccessEntity> AccessEntitys { get; set; }
+        public DbSet<AccessType> AccessTypes { get; set; }
+        public DbSet<AccessEntityByGroup> AccessEntitysByGroups { get; set; }
+
         public bool HasChanges => ChangeTracker.HasChanges();
         public DbCtx() : base("name=DbConnection") {
             Configuration.AutoDetectChangesEnabled = true;
+            Configuration.EnsureTransactionsForFunctionsAndCommands = true;
         }
         public async Task InitializeAsync() {
-            if(DbExistsAndNotEmpty())
+            if(ValidateDatabase())
             {
-                var t1 = Groups.LoadAsync();
-                var t2 = AccessTypes.LoadAsync();
-                var t3 = Employees.LoadAsync();
-                var t4 = GroupPaySystems.LoadAsync();
-                var tasks = new List<Task>() { t1, t2, t3, t4 };
+                var tasks = new List<Task>() 
+                    {
+                        Groups.LoadAsync(),
+                        Employees.LoadAsync(),
+
+                        PaySystems.LoadAsync(),
+                        PayBaseRateParams.LoadAsync(),
+                        PayExperienceParams.LoadAsync(),
+                        PayForSubordinatesParams.LoadAsync(),
+
+                        AccessEntitys.LoadAsync(),
+                        AccessTypes.LoadAsync(),
+                        AccessEntitysByGroups.LoadAsync(),
+                    };
                 while (tasks.Count > 0)
                 {
                     Task finished = await Task.WhenAny(tasks).ConfigureAwait(false);
@@ -38,29 +74,38 @@ namespace SysTechTest.dal
         public void Remove(Employee val) {
             Employees.Local.Remove(val);
         }
+        
+        public PayParamBaseModel Add(PayBaseRateParam val) {
+            PayBaseRateParams.Local.Add(val);
+            return val;
+        }
+        public PayParamBaseModel Add(PayForSubordinatesParam val) {
+            PayForSubordinatesParams.Local.Add(val);
+            return val;
+        }
+        public PayParamBaseModel Add(PayExperienceParam val) {
+            PayExperienceParams.Local.Add(val);
+            return val;
+        }
+
+        public AccessEntityByGroup Add(AccessEntityByGroup val) {
+            AccessEntitysByGroups.Local.Add(val);
+            return val;
+        }
+        public void Remove(AccessEntityByGroup val) {
+            AccessEntitysByGroups.Local.Remove(val);
+        }
+
         internal async Task<Employee> LoginAsync(string login, string pass) {
-            string passHash = GetSHA256Hash(pass);
+            string passHash = Crypto.GetSHA256Hash(pass);
             var list = await Employees.SqlQuery(
                 "Select * from employees " +
                 "where Login == @p0 and Password == @p1", login, passHash)
                 .ToListAsync().ConfigureAwait(false);
             return list.Count == 1 ? list[0] : null;
         }
-        private static string GetSHA256Hash(string s) {
-            if (string.IsNullOrEmpty(s))
-            {
-                throw new ArgumentException("An empty string value cannot be hashed.");
-            }
-            Byte[] data = System.Text.Encoding.UTF8.GetBytes(s);
-            Byte[] hash;
-            using ( var sha = SHA256CryptoServiceProvider.Create())
-            {
-                hash = sha.ComputeHash(data);
-            }
-            return Convert.ToBase64String(hash);
-        }
         // TODO: Реализовать тело метода DbExistsAndNotEmpty (https://habr.com/ru/post/56694/)
-        private bool DbExistsAndNotEmpty() {
+        private bool ValidateDatabase() {
             // проверка наличия файла базы данных
             // проверка наличия таблиц, создание в случае отсутствия
             // заполнение дефолтными значениями

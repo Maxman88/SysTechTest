@@ -50,7 +50,7 @@ namespace SysTechTest.PaySystems
                 decimal payBase = base.Calc(candidat, date1, date2);
                 decimal percent = (decimal)stag * m_percentInAYear;
                 percent = percent < m_maxPercent ? percent : m_maxPercent;
-                res += payBase * 0.01M * percent;
+                res += Currency.CalcPercent(payBase, percent);
             }
             return Currency.Round(res);
         }

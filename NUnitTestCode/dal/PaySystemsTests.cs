@@ -202,7 +202,7 @@ namespace NUnitTestCode.dal
         /// </summary>
         [Test]
         public void BaseRateTest4() {
-            PayBase p = new PayForSubordinates(0.5M, true);
+            PayBase p = new PayForSubordinates(0.5M) { OnlyFirstLevelEnable = true };
             string dateEmpl = "01.05.2019";
             var e0 = new Employee() { BaseRate = 23000M, GroupId = (int)DbHelpers.Group.Manager, DateOfEmployment = dateEmpl };
             var lst = new List<Employee>()
@@ -231,7 +231,7 @@ namespace NUnitTestCode.dal
         [Test]
         public void BaseRateTest5() {
             string dateEmpl = "01.05.2019";
-            PayBase p = new PayForSubordinates(3M, false);
+            PayBase p = new PayForSubordinates(3M) { OnlyFirstLevelEnable = false };
             var e0 = new Employee() { BaseRate = 23000M, GroupId = (int)DbHelpers.Group.Salesman };
             var lst = new List<Employee>()
             {

@@ -1,0 +1,128 @@
+﻿<Window x:Class="SysTechTest.gui.WndSettings"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Настройки системы"
+        WindowStartupLocation="CenterOwner" Topmost="True" WindowStyle="ToolWindow" 
+        MaxWidth="520" MaxHeight="320"
+        >
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Background="#FFE5E5E5" Grid.Column="0">
+            <Label Content="Список групп сотрудников"/>
+            <ListView ItemsSource="{Binding Groups}" 
+                      x:Name="ListGroups"
+                      SelectionMode="Single" 
+                      SelectedItem="{Binding SelectedItem}"
+                      >
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+        <TabControl Grid.Column="1" TabIndex="0" Width="auto">
+            <TabItem Header="Оплата труда" Background="#FFE5E5E5" Width="auto">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <CheckBox Grid.Column="0" Grid.Row="0" 
+                              VerticalAlignment="Center" HorizontalAlignment="Center"
+                              IsChecked="{Binding Path=PayBaseRateParams.IsEnabled}"
+                              IsEnabled="{Binding Path=SelectedIsAvailable}"
+                              />
+                    <GroupBox Header="Основная оплата" Grid.Column="1" Grid.Row="0">
+                        <Grid Grid.Column="1" Grid.Row="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="7*"/>
+                                <RowDefinition Height="20*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="55"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Content="Базовая ставка" Grid.RowSpan="2" />
+                            <TextBox Grid.Column="1" Grid.Row="0" 
+                                     Text="{Binding Path=PayBaseRateParams.BaseRate}"
+                                     IsEnabled="{Binding Path=SelectedIsAvailable}"
+                                     VerticalContentAlignment="Center"
+                                     HorizontalContentAlignment="Right" 
+                                     AcceptsTab="True" AcceptsReturn="True" Grid.RowSpan="2"
+                                     />
+                        </Grid>
+                    </GroupBox>
+                    <CheckBox Grid.Column="0" Grid.Row="1" 
+                              IsChecked="{Binding Path=PayExperienceParams.IsEnabled}"
+                              IsEnabled="{Binding Path=SelectedIsAvailable}"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <GroupBox Header="Надбавка за стаж" Grid.Column="1" Grid.Row="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="55"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Grid.Row="0" Content="Процент за каждый год работы"/>
+                            <Label Grid.Column="0" Grid.Row="1" Content="Максимальный процент надбавки"/>
+                            <TextBox Grid.Column="1" Grid.Row="0" 
+                                     Text="{Binding Path=PayExperienceParams.PercentInAYear}"
+                                     IsEnabled="{Binding Path=SelectedIsAvailable}"
+                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Right"
+                                     />
+                            <TextBox Grid.Column="1" Grid.Row="1" 
+                                     Text="{Binding Path=PayExperienceParams.MaxPercent}"
+                                     IsEnabled="{Binding Path=SelectedIsAvailable}"
+                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
+                        </Grid>
+                    </GroupBox>
+                    <CheckBox Grid.Column="0" Grid.Row="2" 
+                              IsChecked="{Binding Path=PayForSubordinatesParams.IsEnabled}"
+                              IsEnabled="{Binding Path=SelectedIsAvailable}"
+                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <GroupBox Header="Надбавка за подчинённых (% от суммы начислений)" Grid.Column="1" Grid.Row="2">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="55"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" 
+                                      IsEnabled="{Binding Path=SelectedIsAvailable}"
+                                      SelectedIndex="{Binding Path=PayForSubordinatesParams.OnlyFirstLevelEnabled}">
+                                <ComboBoxItem Content="Надбавка за подчинённых всех уровней"/>
+                                <ComboBoxItem Content="Надбавка за подчинённых 1-го уровня"/>
+                            </ComboBox>
+                            <TextBox Grid.Column="1" 
+                                     Text="{Binding Path=PayForSubordinatesParams.Percent}"
+                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
+                        </Grid>
+                    </GroupBox>
+                    <StackPanel Grid.Column="1" Grid.Row="3" Margin="5" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Width="100" HorizontalAlignment="Right" 
+                            Content="Save" 
+                            Command="{Binding CmdSave}"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Права доступа" IsEnabled="False" Width="auto">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

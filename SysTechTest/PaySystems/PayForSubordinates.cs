@@ -6,10 +6,9 @@ namespace SysTechTest.PaySystems
     public class PayForSubordinates : PayBase
     {
         private readonly decimal m_percent;
-        private readonly bool m_onlyFirstLevel;
-        public PayForSubordinates(decimal percent, bool onlyFirstLevel) {
+        public bool OnlyFirstLevelEnable { get; set; }
+        public PayForSubordinates(decimal percent) {
             m_percent = percent;
-            m_onlyFirstLevel = onlyFirstLevel;
         }
         public override decimal Calc(Employee candidat, DateTime dateFrom, DateTime dateTo) {
             if (dateTo < dateFrom)
@@ -24,9 +23,9 @@ namespace SysTechTest.PaySystems
             {
                 return 0.0M;
             }
-            decimal res = m_onlyFirstLevel ? CalcFirstLevel(candidat, dateFrom, dateTo)
-                                           : CalcAllLevels(candidat, dateFrom, dateTo);
-            return Currency.Round(res * 0.01M * m_percent);
+            decimal res = OnlyFirstLevelEnable ? CalcFirstLevel(candidat, dateFrom, dateTo)
+                                               : CalcAllLevels(candidat, dateFrom, dateTo);
+            return Currency.Round(Currency.CalcPercent(res, m_percent));
         }
         private decimal CalcFirstLevel(Employee candidat, DateTime dateFrom, DateTime dateTo) {
             decimal res = 0.0M;

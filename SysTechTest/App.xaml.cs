@@ -1,6 +1,5 @@
-﻿using System.Resources;
-using System.Windows;
-
+﻿using System.Windows;
+using SysTechTest.gui;
 
 namespace SysTechTest
 {
@@ -9,5 +8,11 @@ namespace SysTechTest
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e) {
+            base.OnStartup(e);
+            var wndMain = new WndMain();
+            wndMain.DataContext = new VMWndMain(wndMain);
+            wndMain.Show();
+        }
     }
 }

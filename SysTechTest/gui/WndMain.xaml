@@ -4,60 +4,123 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SysTechTest"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         mc:Ignorable="d"
         Language="ru"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+        Title="Расчёт заработной платы подразделения N" ScrollViewer.VerticalScrollBarVisibility="Auto">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded" >
+            <i:InvokeCommandAction Command="{Binding CmdWindowLoaded}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
-        <Grid.ColumnDefinitions>
-            
-        </Grid.ColumnDefinitions>
-        <TabControl>
-            <TabItem x:Name= "tab1" Header ="Admin">
-                <Grid Background="#FFE5E5E5">
-                    <StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="2">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Height="50" VerticalAlignment="Bottom">
-                            <Button Command="{Binding CmdAdd}" MinWidth="100">
-                                <Label Content="добавить"/>
-                            </Button>
-                            <Button Command="{Binding CmdRemove}" MinWidth="100">
-                                <Label Content="удалить"/>
-                            </Button>
-                            <Button Command="{Binding CmdEdit}" MinWidth="100">
-                                <Label Content="редактировать"/>
-                            </Button>
-                            <Button x:Name="btnSave" Command="{Binding CmdSave}" MinWidth="100">
-                                <Label Content="сохранить изменения"/>
-                            </Button>
-                        </StackPanel>
-                        <DataGrid ItemsSource="{Binding ListEmployees}" SelectedItem="{Binding SelectedEmployee}" 
-                      CanUserSortColumns="False" 
-                      SelectionMode="Single" 
-                      AutoGenerateColumns="False" FontFamily="Arial" 
-                      GridLinesVisibility="Vertical" CanUserAddRows="False" 
-                      CanUserDeleteRows="False" UseLayoutRounding="True" IsReadOnly="True"
-                      >
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Id" Binding = "{Binding Path=Id}"/>
-                                <DataGridTextColumn Header="Имя" Binding = "{Binding Path=Name}"/>
-                                <DataGridTextColumn Header="Дата приёма на работу" Binding = "{Binding DateOfEmployment, StringFormat=\{0:d\}}"/>
-                                <DataGridTextColumn Header="Группа" Binding = "{Binding Path=GroupId}"/>
-                                <DataGridTextColumn Header="Базовая Ставка" Binding = "{Binding BaseRate, StringFormat=\{0:C\}}"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </StackPanel>
-                </Grid>
-            </TabItem>
-            <TabItem Header="Salesman">
-                <Grid Background="#FFE5E5E5"/>
-            </TabItem>
-            <TabItem Header="Manager">
-                <Grid Background="#FFE5E5E5"/>
-            </TabItem>
-            <TabItem Header="Employee">
-                <Grid Background="#FFE5E5E5"/>
-            </TabItem>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Закрыть приложение" Command="ApplicationCommands.Close"/>
+            </MenuItem>
+            <MenuItem Header="Настройки" Command="{Binding CmdShowWndSettings}"/>
 
-        </TabControl>
+        </Menu>
+        <Grid x:Name="MainGrid" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="ListEmplOrAdmins"/>
+                <ColumnDefinition x:Name="SelectedEmpl"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel x:Name="ListOfEmployees" Grid.Column="0" Grid.Row="0">
+                <TabControl  Height="Auto" MinHeight="150" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <TabItem x:Name="TabEmployee" Header="Сотрудники" >
+                        <Grid Background="#FFE5E5E5"/>
+                    </TabItem>
+                    <TabItem x:Name="TabAdmins" Header="Администраторы">
+                        <Grid Background="#FFE5E5E5"/>
+                    </TabItem>
+
+                </TabControl>
+                <DockPanel Height="25" DockPanel.Dock="Top" VerticalAlignment="Bottom">
+                    <Button Content="Button" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75"/>
+                </DockPanel>
+
+            </StackPanel>
+            <StackPanel x:Name="SelectedCommon" Grid.Column="1"  Grid.Row="0" Orientation="Vertical">
+                <GroupBox x:Name="SelectedCommonInfo" Header="Общая информация">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Label x:Name="emplLabelName" Grid.Column="0" Grid.Row="0" Content="Имя"/>
+                        <Label x:Name="emplLabelDate" Grid.Column="0" Grid.Row="1" Content="Дата трудоустройства"/>
+                        <Label x:Name="emplLabelGroup" Grid.Column="0" Grid.Row="2" Content="Группа"/>
+                        <Label x:Name="emplLabelChief" Grid.Column="0" Grid.Row="3" Content="Начальник"/>
+                        <TextBox    x:Name="emplName"  Grid.Column="1" Grid.Row="0" Text="Имя" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                        <DatePicker x:Name="emplDate"  Grid.Column="1" Grid.Row="1"/>
+                        <ComboBox   x:Name="emplGroup" Grid.Column="1" Grid.Row="2"/>
+                        <ComboBox   x:Name="emplChief" Grid.Column="1" Grid.Row="3"/>
+                        <Button x:Name="empButtonSave" Grid.ColumnSpan="2" Grid.Row="4" Margin="0,5" HorizontalAlignment="Right" Width="150" Content="Сохранить изменения"/>
+                    </Grid>
+
+                </GroupBox>
+                <GroupBox x:Name="SelectedEnterParams" Header="Параметры входа в систему">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" Content="Логин"/>
+                        <Label Grid.Column="0" Grid.Row="1" Content="Пароль"/>
+                        <TextBox Grid.Column="1" Grid.Row="0" Text="логин" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
+                        <Button Grid.Column="3" Grid.Row="0" Content="изменить"/>
+                        <PasswordBox Grid.Column="1" Grid.Row="1" Password="555" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
+                        <Button Grid.Column="3" Grid.Row="1" Content="изменить"/>
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Предварительный расчёт заработной платы">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0" Content="Начало периода"/>
+                        <Label Grid.Column="0" Grid.Row="1" Content="Конец периода"/>
+                        <DatePicker Grid.Column="1" Grid.Row="0"/>
+                        <DatePicker Grid.Column="1" Grid.Row="1"/>
+                        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Margin="0,5,0,5" HorizontalAlignment="Right" Width="150" Content="Рассчитать"/>
+                        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" HorizontalAlignment="Right" Width="150" Content="Рассчитать по штату"/>
+
+                    </Grid>
+                </GroupBox>
+
+            </StackPanel>
+
+
+        </Grid>
 
     </Grid>
+
+
 </Window>
