@@ -101,6 +101,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="gui\WndAddEmployee.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="gui\WndChangeLoginPass.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -125,12 +129,16 @@
     <Compile Include="cmd\CmdAction.cs" />
     <Compile Include="dal\DbPaySystem.cs" />
     <Compile Include="gui\MessageBoxEx.cs" />
+    <Compile Include="gui\VMAddEmployee.cs" />
     <Compile Include="gui\VMChangeLoginPass.cs" />
     <Compile Include="gui\VMLogin.cs" />
     <Compile Include="gui\VMNotifyBase.cs" />
     <Compile Include="gui\VMSettings.cs" />
     <Compile Include="gui\VMTreeEmployees.cs" />
     <Compile Include="gui\VMWndMain.cs" />
+    <Compile Include="gui\WndAddEmployee.xaml.cs">
+      <DependentUpon>WndAddEmployee.xaml</DependentUpon>
+    </Compile>
     <Compile Include="gui\WndChangeLoginPass.xaml.cs">
       <DependentUpon>WndChangeLoginPass.xaml</DependentUpon>
     </Compile>

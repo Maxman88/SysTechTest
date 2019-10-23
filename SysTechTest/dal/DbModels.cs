@@ -25,7 +25,7 @@ namespace SysTechTest.dal
  
         private Int64 m_id = (long)NoParent;
         private Int64 m_parentId = (long)NoParent;
-        private int m_groupId = 0;
+        private int m_groupId = (int)DbHelpers.Group.Employee;
         private string m_name = "";
         private string m_dateOfEmployment = DateTimeUtils.DateToStr(DateTime.Now);
         private string m_login = "";

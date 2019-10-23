@@ -20,6 +20,8 @@ namespace SysTechTest.gui
             CmdChangeLoginPass = new CmdAction(arg => OpenWndChangePass());
             CmdAddEmployee = new CmdAction(arg => AddEmployee()) { CanExecuteDelegate = CanChangeListEmployees };
             CmdRemoveEmployee = new CmdAction(arg => RemoveEmployee()) { CanExecuteDelegate = CanChangeListEmployees };
+            CtrlDbCtx.Instance.OnCollectionChanged += OnCollectionChanged;
+
         }
 
         ~VMTreeEmployees() {
@@ -31,6 +33,7 @@ namespace SysTechTest.gui
             {
                 UnSubscribe(node);
             }
+            CtrlDbCtx.Instance.OnCollectionChanged -= OnCollectionChanged;
         }
         #region Properties
         public ICommand CmdSave { get; private set; }
@@ -245,14 +248,24 @@ namespace SysTechTest.gui
                 }
             }
         }
-        // TODO: AddEmployee добавление нужно организовывать через отдельное окно с валидацией
         private void AddEmployee() {
+            var wnd = new WndAddEmployee() { Owner = App.Current.MainWindow };
+            var ctx = new VMAddEmployee(wnd);
+            wnd.DataContext = ctx;
+            wnd.ShowDialog();
+        }
 
-
-            var newEmpl = new Employee() { Name = "Новый сотрудник", Login = "", GroupId = (int)DbHelpers.Group.Employee };
-            CtrlDbCtx.Instance.Add(newEmpl);
-            Update();
-            SetFocusAt(newEmpl);
+        private void OnCollectionChanged(object sender, EventArgs e) {
+            var ev = (ChangeCollectionEventArgs)e;
+            var empl = (Employee)sender;
+            if(ev!=null && empl != null)
+            {
+                Update();
+                if (ev.Added)
+                {
+                    SetFocusAt(empl);
+                }
+            }
         }
 
         private void RemoveEmployee() {
@@ -267,7 +280,6 @@ namespace SysTechTest.gui
                 UnSubscribe(SelectedNode);
                 var idx = EmployeesView.IndexOf(SelectedNode);
                 CtrlDbCtx.Instance.Remove(SelectedNode.Owner);
-                Update();
                 if (idx == EmployeesView.Count )
                 {
                     idx--;

@@ -5,6 +5,12 @@ using System.Threading.Tasks;
 
 namespace SysTechTest.dal
 {
+    public class ChangeCollectionEventArgs : EventArgs {
+        public bool Added { get; set; }
+        public bool Removed { get; set; }
+        public Employee Item { get; set; }
+
+    }
     public class CtrlDbCtx : IDisposable {
         private static readonly List<Employee> EmptyListEmployees = new List<Employee>();
              
@@ -40,7 +46,7 @@ namespace SysTechTest.dal
             else
             {
                 item.Login = loginTxt;
-                item.Password = Crypto.GetSHA256Hash(password);
+                item.Password = EncodePass(password);
                 SaveChangesIfExists();
             }
             
@@ -83,6 +89,7 @@ namespace SysTechTest.dal
 
 
         private CtrlDbCtx() {
+            
         }
         public async Task InitializeAsync() {
             await m_ctx.InitializeAsync().ConfigureAwait(false);
@@ -183,11 +190,18 @@ namespace SysTechTest.dal
         }
         #endregion
         //TODO: Add реализовать обработку ошибок + проверка полей (например поле login должно быть уникальным)
-        public void Add(Employee val) {
+        public void Add(Employee val, string password) {
+            val.Password = EncodePass(password);
             m_ctx.Add(val);
             Employees.Add(val);
             m_ctx.SaveChanges();
+            OnCollectionChangedHandler(val, new ChangeCollectionEventArgs { Removed = false, Item = val, Added = true });
+
         }
+        private string EncodePass(string password) {
+            return Crypto.GetSHA256Hash(password);
+        }
+
         //TODO: Remove реализовать обработку ошибок
         public void Remove(Employee val) {
             foreach (Employee empl in Employees.FindAll(item => item.ParentId == val.Id))
@@ -198,6 +212,7 @@ namespace SysTechTest.dal
             m_ctx.Remove(val);
             Employees.Remove(val);
             m_ctx.SaveChanges();
+            OnCollectionChangedHandler(val, new ChangeCollectionEventArgs {Removed=true, Item=val, Added=false });
         }
         public void SaveChangesIfExists() {
             if (HasChanges)
@@ -212,8 +227,7 @@ namespace SysTechTest.dal
             {
                 throw new ArgumentNullException("login or password must be not empty.");
             }
-            string passHash = Crypto.GetSHA256Hash(pass);
-            CurrentUserOrNull = await m_ctx.LoginAsync( login, passHash).ConfigureAwait(false);
+            CurrentUserOrNull = await m_ctx.LoginAsync(login, EncodePass(pass)).ConfigureAwait(false);
             if (CurrentUserOrNull != null)
             {
                 LoginSuccess?.Invoke(this, EventArgs.Empty);

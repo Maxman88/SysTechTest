@@ -120,9 +120,6 @@
                     </StackPanel>
                 </Grid>
             </TabItem>
-            <TabItem Header="Права доступа" IsEnabled="False" Width="auto">
-                <Grid Background="#FFE5E5E5"/>
-            </TabItem>
         </TabControl>
     </Grid>
 </Window>

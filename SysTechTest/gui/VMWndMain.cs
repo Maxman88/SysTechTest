@@ -34,17 +34,9 @@ namespace SysTechTest.gui
             CtrlDbCtx.Instance.LoginSuccess += LoginSuccess;
             m_subscribeLoginSuccess = true;
             MainVisibility = Visibility.Hidden;
-            bool autoEnter = false;
-            if(autoEnter)
-            {
-                CtrlDbCtx.Instance.LoginAsync("root", "1").ConfigureAwait(false);
-            }
-            else
-            {
-                var wndLogin = new WndLoginDlg() { Owner = App.Current.MainWindow };
-                wndLogin.DataContext = new VMLogin(wndLogin);
-                wndLogin.ShowDialog();
-            }
+            var wndLogin = new WndLoginDlg() { Owner = App.Current.MainWindow };
+            wndLogin.DataContext = new VMLogin(wndLogin);
+            wndLogin.ShowDialog();
         }
         private void LoginSuccess(object sender, EventArgs e) {
             var ctrl = CtrlDbCtx.Instance;
