@@ -21,6 +21,7 @@ namespace SysTechTest.cmd
         }
 
         public event EventHandler CanExecuteChanged;
+        public void InvokeCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         private void Invoke(object sender, EventArgs e) => CanExecuteChanged?.Invoke(sender, e);
 
 

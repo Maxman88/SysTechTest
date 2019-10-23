@@ -14,6 +14,11 @@ namespace SysTechTest.PaySystems
     ///  Источник: http://tkodeksrf.ru/ch-3/rzd-6/gl-20/st-129-tk-rf
     /// </summary>
     public class PayBaseRate : PayBase {
+
+        public PayBaseRate(decimal baseRate) {
+            BaseRate = baseRate;
+        }
+        public decimal BaseRate { get; set; }
         /// <summary>
         /// Подсчёт суммы оплаты за фактически отработанное время
         /// </summary>
@@ -25,11 +30,7 @@ namespace SysTechTest.PaySystems
             if (dateTo < dateFrom ) {
                 throw new ArgumentException("PayBaseRate.Calc: Period is invalid.");
             }
-            if (candidat == null)
-            {
-                throw new ArgumentNullException("PayBaseRate.Calc: parametr candidat is null.");
-            }
-            if (candidat.BaseRate == decimal.Zero)
+            if (BaseRate == decimal.Zero)
             {
                 return 0.0M;
             }
@@ -38,11 +39,13 @@ namespace SysTechTest.PaySystems
                 return 0.0M;
             }
             decimal res = 0.0M;
+            var dateOfEmpl = DateTimeUtils.DateFromStr( candidat.DateOfEmployment ).Date;
+            dateFrom = dateFrom < dateOfEmpl ? dateOfEmpl : dateFrom; 
             while (dateFrom <= dateTo)
             {
                 var month = GetMonthPeriod(dateFrom);
                 var toForCalcPay = month.lastDay < dateTo ? month.lastDay : dateTo;
-                res += CalcPayAtMonth(candidat.BaseRate, month, dateFrom, toForCalcPay);
+                res += CalcPayAtMonth(month, dateFrom, toForCalcPay);
                 month = GetMonthPeriod(month.firstDay.AddMonths(1));
                 dateFrom = month.firstDay;
             }
@@ -69,14 +72,14 @@ namespace SysTechTest.PaySystems
             }
             return totalDays;
         }
-        private decimal CalcPayAtMonth(decimal baseRate, (DateTime firstDay, DateTime lastDay) month, DateTime from, DateTime to) {
+        private decimal CalcPayAtMonth((DateTime firstDay, DateTime lastDay) month, DateTime from, DateTime to) {
             decimal allworkdays = CalcAmountBusinessDays(month.firstDay, month.lastDay);
             decimal daysWorked = CalcAmountBusinessDays
                 (
                     month.firstDay < from ? from : month.firstDay,
                     month.lastDay < to ? month.lastDay : to
                 );
-            return Currency.Round(baseRate / allworkdays * daysWorked);
+            return Currency.Round(BaseRate / allworkdays * daysWorked);
         }
         private (DateTime firstDay, DateTime lastDay) GetMonthPeriod(DateTime date) {
             DateTime firstDay = new DateTime(date.Year, date.Month, 1);

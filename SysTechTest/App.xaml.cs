@@ -10,8 +10,7 @@ namespace SysTechTest
     {
         protected override void OnStartup(StartupEventArgs e) {
             base.OnStartup(e);
-            var wndMain = new WndMain();
-            wndMain.DataContext = new VMWndMain(wndMain);
+            var wndMain = new WndMain() { DataContext = new VMWndMain() };
             wndMain.Show();
         }
     }

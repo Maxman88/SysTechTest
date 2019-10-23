@@ -1,63 +1,65 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows;
 using SysTechTest.cmd;
 using SysTechTest.dal;
 
 namespace SysTechTest.gui
 {
-    public class VMLogin
+    public class VMLogin : VMNotifyBase
     {
         private readonly WndLoginDlg wndLogin;
-        private bool m_loginProcessing = false;
-        private List<UIElement> m_listUI;
-        public string LoginTxt { get; set; }
+        public VMLogin(WndLoginDlg wndLogin) {
+            CommandLogin = new CmdAction(arg => ActionLoginAsync());
+            CommandCloseApp = new CmdCloseApp();
+            
+            this.wndLogin = wndLogin ?? throw new ArgumentNullException(nameof(wndLogin), "VMLogin constructor: ArgumentNullException");
+            wndLogin.PassTxt.PasswordChanged += PassTxt_PasswordChanged;
+        }
+
         public CmdAction CommandLogin { get; private set; }
         public CmdAction CommandCloseApp { get; private set; }
-        public VMLogin(WndLoginDlg wndLogin) {
-            if(wndLogin == null)
-            {
-                throw new ArgumentNullException(nameof(wndLogin), "VMLogin constructor: ArgumentNullException");
-            }
-            CommandLogin = new CmdAction(arg => ActionLoginAsync());
-            CommandCloseApp = new CmdAction(arg => Application.Current.Shutdown());
-            this.wndLogin = wndLogin;
-            wndLogin.loginTxt.Focus();
-            m_listUI = new List<UIElement>() { wndLogin.btnLogin, wndLogin.btnCancel, wndLogin.loginTxt, wndLogin.PassTxt };
+        private string m_loginTxt;
+        public string LoginTxt {
+            get => m_loginTxt;
+            set { m_loginTxt = value; CheckCanLogin(); }
         }
-        private async void ActionLoginAsync() {
-            if(false == CanLogin(EventArgs.Empty))
-            {
-                return;
-            }
+        private bool m_canLogin = false;
+        public bool CanLogin {
+            get => m_canLogin;
+            private set { m_canLogin = value; OnPropertyChanged(); }
+        }
+        private bool m_loginProcessing = false;
+        public bool LoginProcessing {
+            get => m_loginProcessing;
+            set { m_loginProcessing = value; CheckCanLogin(); OnPropertyChanged(); }
+        }
 
-            foreach (var ui in m_listUI)
-            {
-                ui.IsEnabled = false;
-            }
-            m_loginProcessing = true;
+        private void PassTxt_PasswordChanged(object sender, RoutedEventArgs e) {
+            CheckCanLogin();
+        }
+
+        private async void ActionLoginAsync() {
+            LoginProcessing = true;
             await CtrlDbCtx.Instance.LoginAsync(LoginTxt, wndLogin.PassTxt.Password).ConfigureAwait(false);
-            m_loginProcessing = false;
+            LoginProcessing = false;
             if (CtrlDbCtx.Instance.LoggedIn)
             {
+                wndLogin.PassTxt.PasswordChanged -= PassTxt_PasswordChanged;
                 wndLogin.Close();
             }
             else
             {
-                foreach (var ui in m_listUI)
-                {
-                   ui.IsEnabled = true;
-                }
+                string title = "Ошибка входа в систему";
+                string msg = "Нет такой пары login, password. Попытайтесь ещё разок. ;)";
+                _ = MessageBoxEx.Show(wndLogin, msg, title, MessageBoxButton.OK);
                 wndLogin.loginTxt.SelectAll();
-                MessageBox.Show(wndLogin, "Нет такой пары login, password. Попытайтесь ещё разок. ;)");
             }
         }
-        private bool CanLogin(object parameter) {
-            var res = false == m_loginProcessing
-                && false == string.IsNullOrEmpty(wndLogin.loginTxt.Text)
-                && false == string.IsNullOrEmpty(wndLogin.PassTxt.Password);
 
-            return res;
+        private void CheckCanLogin() {
+            CanLogin = false == m_loginProcessing
+                && false == string.IsNullOrEmpty(LoginTxt)
+                && false == string.IsNullOrEmpty(wndLogin.PassTxt.Password);
         }
     }
 }

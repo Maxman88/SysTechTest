@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SysTechTest.cmd;
 using SysTechTest.dal;
@@ -9,7 +6,8 @@ using Group = SysTechTest.dal.Group;
 
 namespace SysTechTest.gui
 {
-    internal partial class VMSettings : INotifyPropertyChanged {
+    internal partial class VMSettings : VMNotifyBase
+    {
         private bool m_selectedIsAvailable;
         private Group m_selectedItemOrNull;
         private readonly PaySystem m_default;
@@ -26,10 +24,6 @@ namespace SysTechTest.gui
             SelectedItem = Groups.Count == 0 ? null : Groups[0];
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "") {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-        }
         public ObservableCollection<Group> Groups { get; private set; }
         public PayBaseRateParam PayBaseRateParams {
             get { return m_payBaseRateParams; }
@@ -52,9 +46,9 @@ namespace SysTechTest.gui
             set {
                 if(m_selectedItemOrNull != null)
                 {
-                    PayBaseRateParams.PropertyChanged -= OnPaySystemPropertyChanged;
-                    PayExperienceParams.PropertyChanged -= OnPaySystemPropertyChanged;
-                    PayForSubordinatesParams.PropertyChanged -= OnPaySystemPropertyChanged;
+                    PayBaseRateParams.PropertyChanged -= OnPropertyChanged;
+                    PayExperienceParams.PropertyChanged -= OnPropertyChanged;
+                    PayForSubordinatesParams.PropertyChanged -= OnPropertyChanged;
                 }
                 m_selectedItemOrNull = value;
                 SelectedIsAvailable = m_selectedItemOrNull != null;
@@ -64,16 +58,12 @@ namespace SysTechTest.gui
                 PayForSubordinatesParams = ps.PayForSubordinatesParams;
                 if (m_selectedItemOrNull != null)
                 {
-                    PayBaseRateParams.PropertyChanged += OnPaySystemPropertyChanged;
-                    PayExperienceParams.PropertyChanged += OnPaySystemPropertyChanged;
-                    PayForSubordinatesParams.PropertyChanged += OnPaySystemPropertyChanged;
+                    PayBaseRateParams.PropertyChanged += OnPropertyChanged;
+                    PayExperienceParams.PropertyChanged += OnPropertyChanged;
+                    PayForSubordinatesParams.PropertyChanged += OnPropertyChanged;
                 }
                 OnPropertyChanged();
             }
-        }
-        public event EventHandler PropertyPaymentChanged;
-        private void OnPaySystemPropertyChanged(object sender, PropertyChangedEventArgs e) {
-            PropertyPaymentChanged?.Invoke(sender, e);
         }
     }
 }

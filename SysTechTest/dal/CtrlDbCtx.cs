@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 namespace SysTechTest.dal
 {
     public class CtrlDbCtx : IDisposable {
+        private static readonly List<Employee> EmptyListEmployees = new List<Employee>();
+             
         #region Singleton
         private static CtrlDbCtx m_instance;
         public static CtrlDbCtx Instance {
@@ -21,14 +23,64 @@ namespace SysTechTest.dal
         private readonly DbCtx m_ctx = new DbCtx();
         //------------
         private List<Group> Groups { get; set; } = new List<Group>();
-        public List<Employee> Employees { get; private set; } = new List<Employee>();
-        public List<PaySystemDesc> PaySystemDescs { get; private set; } = new List<PaySystemDesc>();
+        private List<Employee> Employees { get; set; } = new List<Employee>();
 
+        public Employee CurrentUserOrNull { get; private set; } = null;
 
-        public List<Group> GroupsOfEmployee { get => Groups.FindAll(p => p.Id != (int) DbHelpers.Group.Supervisor); }
-    public Employee CurrentUserOrNull { get; private set; } = null;
+        public void UpdateLoginPassword(Employee item, string loginTxt, string password) {
+            if(item == null)
+            {
+                throw new ArgumentNullException("UpdateLoginPassword. parametr item is null..");
+            }
+
+            if(item.Login != loginTxt && false == IsLoginUnique(loginTxt))
+            {
+                throw new ArgumentException("UpdateLoginPassword. login is not unique!!!");
+            }
+            else
+            {
+                item.Login = loginTxt;
+                item.Password = Crypto.GetSHA256Hash(password);
+                SaveChangesIfExists();
+            }
+            
+        }
+
+        public bool IsLoginUnique(string loginTxt) {
+            return Employees.FindAll(p => p.Login == loginTxt).Count == 0;
+        }
+
         public bool LoggedIn { get => CurrentUserOrNull != null; }
+        public bool AdminHere { get => CurrentUserOrNull != null ? IsAdmin(CurrentUserOrNull.GroupId) : false; }
         public bool HasChanges => m_ctx.HasChanges;
+        public List<Group> GroupsOfEmployee { get => Groups.FindAll(p => IsAdmin(p.Id) == false); }
+        public List<Employee> GetListEmployees() => Employees.FindAll(p => IsAdmin(p.GroupId) == false);
+        public List<Employee> GetListAdmins() => Employees.FindAll(p => IsAdmin(p.GroupId) == true);
+        public List<Employee> EmployeesByCurrentUser {
+            get {
+
+                if (CurrentUserOrNull == null)
+                {
+                    return EmptyListEmployees;
+                }
+                if (AdminHere)
+                {
+                    return GetListEmployees();
+                }
+
+
+                List<Employee> AddChild(Employee owner, List<Employee> acc) {
+                    foreach (var item in Employees.FindAll(item => item.ParentId == owner.Id))
+                    {
+                        AddChild(item, acc);
+                        acc.Add(item);
+                    }
+                    return acc;
+                }
+                return AddChild(CurrentUserOrNull, new List<Employee>() { CurrentUserOrNull });
+            }
+        }
+
 
         private CtrlDbCtx() {
         }
@@ -36,11 +88,13 @@ namespace SysTechTest.dal
             await m_ctx.InitializeAsync().ConfigureAwait(false);
             var t1 = m_ctx.Groups.ToListAsync();
             var t2 = m_ctx.Employees.ToListAsync();
-            var t3 = m_ctx.PaySystems.ToListAsync();
 
+            var t3 = m_ctx.PaySystems.ToListAsync();
             var t4 = m_ctx.PayBaseRateParams.ToListAsync();
             var t5 = m_ctx.PayExperienceParams.ToListAsync();
             var t6 = m_ctx.PayForSubordinatesParams.ToListAsync();
+
+            var PaySystemDescs = new List<PaySystemDesc>();
             var PayBaseRateParams = new List<PayBaseRateParam>();
             var PayExperienceParams = new List<PayExperienceParam>();
             var PayForSubordinatesParams = new List<PayForSubordinatesParam>();
@@ -68,11 +122,7 @@ namespace SysTechTest.dal
                     throw new Exception("InitializeAsync: Can't load table from db.", ex);
                 }
             }
-            // Build employee subordinates
-            foreach (Employee empl in Employees)
-            {
-                empl.GetSubordinates().AddRange(Employees.FindAll(item => item.ParentId == empl.Id));
-            }
+
             // Check integrity pay systems
             foreach (var gr in Groups)
             {
@@ -91,12 +141,25 @@ namespace SysTechTest.dal
                 {
                     p3 = (PayForSubordinatesParam)m_ctx.Add(new PayForSubordinatesParam() { GroupId = gr.Id });
                 }
+                p1.SetPaySystemDesc(PaySystemDescs.Find(p => p.Id == p1.PaySystemDescId));
+                p2.SetPaySystemDesc(PaySystemDescs.Find(p => p.Id == p2.PaySystemDescId));
+                p3.SetPaySystemDesc(PaySystemDescs.Find(p => p.Id == p3.PaySystemDescId));
+                
                 gr.SetPaySystems(new PaySystem(p1,p2,p3));
             }
             if (HasChanges)
             {
                 await m_ctx.SaveChangesAsync().ConfigureAwait(false);
             }
+        }
+
+        internal List<Employee> GetListAvailableChiefs(Employee candidat) {
+            var res = Employees.FindAll(p =>
+                  p.GroupId != (int)DbHelpers.Group.Employee
+               && false == IsAdmin(p.GroupId)
+               && (p.Id != candidat.Id)
+            );
+            return res;
         }
         #region IDisposable Support
         private bool disposedValue = false; // Для определения избыточных вызовов
@@ -123,11 +186,18 @@ namespace SysTechTest.dal
         public void Add(Employee val) {
             m_ctx.Add(val);
             Employees.Add(val);
+            m_ctx.SaveChanges();
         }
         //TODO: Remove реализовать обработку ошибок
         public void Remove(Employee val) {
+            foreach (Employee empl in Employees.FindAll(item => item.ParentId == val.Id))
+            {
+                empl.ParentId = Employee.NoParent;
+            }
+
             m_ctx.Remove(val);
             Employees.Remove(val);
+            m_ctx.SaveChanges();
         }
         public void SaveChangesIfExists() {
             if (HasChanges)
@@ -135,11 +205,6 @@ namespace SysTechTest.dal
                 m_ctx.SaveChanges();
             }
         }
-        //TODO: Нужно реализовывать
-        public async Task RollBackAsync() {
-
-        }
-
         public event EventHandler LoginSuccess;
         public event EventHandler LoginFail;
         public async Task LoginAsync( string login, string pass ) {
@@ -147,7 +212,8 @@ namespace SysTechTest.dal
             {
                 throw new ArgumentNullException("login or password must be not empty.");
             }
-            CurrentUserOrNull = await m_ctx.LoginAsync( login, pass ).ConfigureAwait(false);
+            string passHash = Crypto.GetSHA256Hash(pass);
+            CurrentUserOrNull = await m_ctx.LoginAsync( login, passHash).ConfigureAwait(false);
             if (CurrentUserOrNull != null)
             {
                 LoginSuccess?.Invoke(this, EventArgs.Empty);
@@ -157,6 +223,10 @@ namespace SysTechTest.dal
                 LoginFail?.Invoke(this, EventArgs.Empty);
             }
         }
+        private static bool IsAdmin(int GroupId) {
+            return GroupId == (int)DbHelpers.Group.Supervisor;
+        }
+
         public event EventHandler OnCollectionChanged;
         private void OnCollectionChangedHandler(object sender, EventArgs e) => OnCollectionChanged?.Invoke(sender, e);
     }

@@ -35,10 +35,6 @@ namespace SysTechTest.dal
         /// </summary>
         public DbSet<PayForSubordinatesParam> PayForSubordinatesParams { get; set; }
         #endregion
-        public DbSet<AccessEntity> AccessEntitys { get; set; }
-        public DbSet<AccessType> AccessTypes { get; set; }
-        public DbSet<AccessEntityByGroup> AccessEntitysByGroups { get; set; }
-
         public bool HasChanges => ChangeTracker.HasChanges();
         public DbCtx() : base("name=DbConnection") {
             Configuration.AutoDetectChangesEnabled = true;
@@ -55,11 +51,7 @@ namespace SysTechTest.dal
                         PaySystems.LoadAsync(),
                         PayBaseRateParams.LoadAsync(),
                         PayExperienceParams.LoadAsync(),
-                        PayForSubordinatesParams.LoadAsync(),
-
-                        AccessEntitys.LoadAsync(),
-                        AccessTypes.LoadAsync(),
-                        AccessEntitysByGroups.LoadAsync(),
+                        PayForSubordinatesParams.LoadAsync()
                     };
                 while (tasks.Count > 0)
                 {
@@ -74,7 +66,6 @@ namespace SysTechTest.dal
         public void Remove(Employee val) {
             Employees.Local.Remove(val);
         }
-        
         public PayParamBaseModel Add(PayBaseRateParam val) {
             PayBaseRateParams.Local.Add(val);
             return val;
@@ -87,17 +78,8 @@ namespace SysTechTest.dal
             PayExperienceParams.Local.Add(val);
             return val;
         }
-
-        public AccessEntityByGroup Add(AccessEntityByGroup val) {
-            AccessEntitysByGroups.Local.Add(val);
-            return val;
-        }
-        public void Remove(AccessEntityByGroup val) {
-            AccessEntitysByGroups.Local.Remove(val);
-        }
-
-        internal async Task<Employee> LoginAsync(string login, string pass) {
-            string passHash = Crypto.GetSHA256Hash(pass);
+        internal async Task<Employee> LoginAsync(string login, string passHash) {
+            
             var list = await Employees.SqlQuery(
                 "Select * from employees " +
                 "where Login == @p0 and Password == @p1", login, passHash)

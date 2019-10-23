@@ -89,9 +89,11 @@
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="UIAutomationProvider" />
-    <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WindowsBase.4.6.1055.0\lib\WindowsBase.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +101,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="gui\WndChangeLoginPass.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="gui\WndLoginDlg.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -112,15 +118,22 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppUtils.cs" />
+    <Compile Include="cmd\CmdCloseApp.cs" />
     <Compile Include="cmd\CmdSave.cs" />
-    <Compile Include="dal\AccessRights.cs" />
-    <Compile Include="dal\DbCommon.cs" />
+    <Compile Include="dal\DbDictionary.cs" />
     <Compile Include="dal\DbHelpers.cs" />
     <Compile Include="cmd\CmdAction.cs" />
     <Compile Include="dal\DbPaySystem.cs" />
+    <Compile Include="gui\MessageBoxEx.cs" />
+    <Compile Include="gui\VMChangeLoginPass.cs" />
     <Compile Include="gui\VMLogin.cs" />
+    <Compile Include="gui\VMNotifyBase.cs" />
     <Compile Include="gui\VMSettings.cs" />
+    <Compile Include="gui\VMTreeEmployees.cs" />
     <Compile Include="gui\VMWndMain.cs" />
+    <Compile Include="gui\WndChangeLoginPass.xaml.cs">
+      <DependentUpon>WndChangeLoginPass.xaml</DependentUpon>
+    </Compile>
     <Compile Include="gui\WndLoginDlg.xaml.cs">
       <DependentUpon>WndLoginDlg.xaml</DependentUpon>
     </Compile>

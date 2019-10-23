@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Input;
 using SysTechTest.cmd;
 using SysTechTest.dal;
 
 namespace SysTechTest.gui
 {
-    public class VMWndMain
+    public class VMWndMain : VMNotifyBase
     {
-        private bool m_subscribeLoginSuccess;
-        private readonly WndMain m_wndMain;
+        private bool m_subscribeLoginSuccess = false;
 
-        public ICommand CmdWindowLoaded { get; private set; }
-        public ICommand CmdShowWndSettings { get; private set; }
-        public VMWndMain(WndMain wndMain) {
-            m_wndMain = wndMain;
-            CmdWindowLoaded = new CmdAction(async arg => await WindowLoadedAsync().ConfigureAwait(false));
-            CmdShowWndSettings = new CmdAction(arg => ShowWndSettings());
+        public VMWndMain() {
+            CmdWindowLoaded = new CmdAction(arg => WindowLoadedAsync());
+            CmdShowWndSettings = new CmdAction(arg => ShowToolWndDlg(new WndSettings(), new VMSettings()))
+            {
+                CanExecuteDelegate = SettingsAvailable
+            };
         }
         ~VMWndMain() {
             if(m_subscribeLoginSuccess)
@@ -24,33 +22,50 @@ namespace SysTechTest.gui
                 CtrlDbCtx.Instance.LoginSuccess -= LoginSuccess;
             }
         }
-        private async System.Threading.Tasks.Task WindowLoadedAsync() {
-            m_wndMain.MainGrid.Visibility = Visibility.Hidden;
+        
+        public VMTreeEmployees VMTreeViewEmployees { get; private set; } = new VMTreeEmployees();
+
+        public CmdAction CmdCloseApp { get; private set; } = new CmdCloseApp();
+        public CmdAction CmdWindowLoaded { get; private set; }
+        public CmdAction CmdShowWndSettings { get; private set; }
+        private Visibility m_mainVisibility = Visibility.Hidden;
+        public Visibility MainVisibility { get => m_mainVisibility; private set { m_mainVisibility = value; OnPropertyChanged(); } }
+        private void WindowLoadedAsync() {
             CtrlDbCtx.Instance.LoginSuccess += LoginSuccess;
             m_subscribeLoginSuccess = true;
-            await CtrlDbCtx.Instance.LoginAsync("log1", "1").ConfigureAwait(false);
-            /*var wndLogin = new WndLoginDlg() { Owner = m_wndMain };
-            wndLogin.DataContext = new VMLogin(wndLogin);
-            wndLogin.ShowDialog();*/
+            MainVisibility = Visibility.Hidden;
+            bool autoEnter = false;
+            if(autoEnter)
+            {
+                CtrlDbCtx.Instance.LoginAsync("root", "1").ConfigureAwait(false);
+            }
+            else
+            {
+                var wndLogin = new WndLoginDlg() { Owner = App.Current.MainWindow };
+                wndLogin.DataContext = new VMLogin(wndLogin);
+                wndLogin.ShowDialog();
+            }
         }
         private void LoginSuccess(object sender, EventArgs e) {
             var ctrl = CtrlDbCtx.Instance;
-            if(m_subscribeLoginSuccess)
+            if (m_subscribeLoginSuccess)
             {
                 ctrl.LoginSuccess -= LoginSuccess;
                 m_subscribeLoginSuccess = false;
             }
-            if (ctrl.CurrentUserOrNull == null)
-            {
-                throw new NullReferenceException();
-            }
-            else  {
-                _ = ctrl.InitializeAsync();
-            }
+            _ = ctrl.InitializeAsync();
+            MainVisibility = Visibility.Visible;
+            m_settingsAvailable = ctrl.AdminHere;
+            CmdShowWndSettings.InvokeCanExecuteChanged();
+            VMTreeViewEmployees.Update();
         }
-        private void ShowWndSettings() {
-            var wnd = new WndSettings() { Owner = m_wndMain, DataContext = new VMSettings() };
+        bool m_settingsAvailable = false;
+        private bool SettingsAvailable(object obj = null) => m_settingsAvailable;
+        private void ShowToolWndDlg(Window wnd, Object Context = null) {
+            wnd.Owner = App.Current.MainWindow;
+            wnd.DataContext = Context;
             wnd.ShowDialog();
         }
     }
+
 }

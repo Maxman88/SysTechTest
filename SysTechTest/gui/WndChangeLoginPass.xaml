@@ -1,32 +1,30 @@
-﻿<Window x:Class="SysTechTest.gui.WndLoginDlg"
+﻿<Window x:Class="SysTechTest.gui.WndChangeLoginPass"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:systechtest="clr-namespace:SysTechTest"
+        xmlns:local="clr-namespace:SysTechTest.gui"
         mc:Ignorable="d"
         FocusManager.FocusedElement="{Binding ElementName=loginTxt}"
         FontFamily="Tahoma" FontSize="16"
-        Title="Вход в систему" Height="147" Width="342" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Topmost="True" Background="Gray" WindowStyle="ToolWindow">
+        Title="Изменение логина пароля" Height="147" Width="342" ResizeMode="NoResize" 
+        WindowStartupLocation="CenterOwner" Topmost="True" Background="Gray" WindowStyle="ToolWindow">
     <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
         <StackPanel Orientation="Horizontal">
             <Label Content="Логин" Width="80"/>
             <TextBox x:Name="loginTxt" Text="{Binding Path=LoginTxt}" 
-                     IsEnabled="{Binding !LoginProcessing}"
-                     Width="240" TabIndex="0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                     Width="240" TabIndex="0" HorizontalAlignment="Right" VerticalAlignment="Center" AcceptsTab="True" AcceptsReturn="True"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
             <Label Content="Пароль" Width="80"/>
             <PasswordBox x:Name="PassTxt" Width="240" TabIndex="1" 
-                         IsEnabled="{Binding !LoginProcessing}"
                          HorizontalAlignment="Right" VerticalAlignment="Center"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0" >
             <Button x:Name="btnCancel" Content="Отмена" Width="100" Height="30" Margin="0,0,10,0" 
-                    IsEnabled="{Binding !LoginProcessing}"
-                    Command="{Binding CommandCloseApp}" TabIndex="3"/>
-            <Button x:Name="btnLogin" Content="Ок" Width="100" Height="30" Command="{Binding CommandLogin, IsAsync=True}"
-                    IsEnabled="{Binding CanLogin}"
+                    Command="{Binding CmdClose}" TabIndex="3"/>
+            <Button x:Name="btnLogin" Content="Ок" Width="100" Height="30" 
+                    Command="{Binding CmdUpdLoginPass, IsAsync=True}"
                     TabIndex="2"/>
         </StackPanel>
     </StackPanel>

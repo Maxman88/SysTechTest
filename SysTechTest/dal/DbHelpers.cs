@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -16,7 +15,7 @@ namespace SysTechTest.dal
         /// <param name="enumElement">Элемент перечисления</param>
         /// <returns>Название элемента</returns>
         public static string GetDescription(Enum enumElement) {
-            Type type = enumElement.GetType();
+            Type type = enumElement?.GetType();
 
             MemberInfo[] memInfo = type.GetMember(enumElement.ToString());
             if (memInfo != null && memInfo.Length > 0)
@@ -28,61 +27,52 @@ namespace SysTechTest.dal
 
             return enumElement.ToString();
         }
+        /// <summary>
+        /// Группы пользователей
+        /// </summary>
         public enum Group // по хорошему нужен srcgen из бд.
         {
+            /// <summary>
+            /// Суперпользователь
+            /// </summary>
+            [Description("Supervisor")]
             Supervisor = 1,
+            /// <summary>
+            /// Сотрудник
+            /// </summary>
+            [Description("Employee")]
             Employee = 2,
-            Manager  = 3,
+            /// <summary>
+            /// Менеджер
+            /// </summary>
+            [Description("Manager")]
+            Manager = 3,
+            /// <summary>
+            /// Продавец
+            /// </summary>
+            [Description("Salesman")]
             Salesman = 4
         }
+        /// <summary>
+        /// Виды алгоритмов по начислению оплаты труда
+        /// </summary>
         public enum PaySystem // по хорошему нужен srcgen из бд.
         {
+            /// <summary>
+            /// Оплата по базовой ставке(окладу)
+            /// </summary>
+            [Description("PayBaseRate")]
             PayBaseRate = 1,
+            /// <summary>
+            /// Оплата за стаж
+            /// </summary>
+            [Description("PayExperience")]
             PayExperience = 2,
+            /// <summary>
+            /// Оплата процента от оплаты труда подчинённых
+            /// </summary>
+            [Description("PayForSubordinates")]
             PayForSubordinates = 3
-        }
-        public enum PaySystemParamsName
-        {
-            BaseRate = 1,
-            PercentInAYear = 2,
-            MaxPercent = 3,
-            Percent = 4,
-            OnlyFirstLevelEnable = 5
-        }
-        public enum AccessEntity // по хорошему нужен srcgen из бд.
-        {
-            /// <summary>
-            /// Имя сотрудника
-            /// </summary>
-            [Description("Employee.Name")]
-            EmployeeName = 1,
-            /// <summary>
-            /// Группа сотрудника
-            /// </summary>
-            [Description("Employee.Group")]
-            EmployeeGroup = 2,
-            /// <summary>
-            /// Начальник сотрудника
-            /// </summary>
-            [Description("Employee.Chief")]
-            EmployeeChief = 3,
-            /// <summary>
-            /// Дата трудоустройства сотрудника
-            /// </summary>
-            [Description("Employee.DateOfEmployment")]
-            EmployeeDateOfEmployment = 4,
-            /// <summary>
-            /// Логин
-            /// </summary>
-            [Description("Employee.Login")]
-            EmployeeLogin = 5,
-            /// <summary>
-            /// пароль
-            /// </summary>
-            [Description("Employee.Password")]
-            EmployeePassword = 6
-
-
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SysTechTest.dal;
 
 namespace SysTechTest.PaySystems
@@ -27,15 +28,19 @@ namespace SysTechTest.PaySystems
                                                : CalcAllLevels(candidat, dateFrom, dateTo);
             return Currency.Round(Currency.CalcPercent(res, m_percent));
         }
+        private List<Employee> GetSubordinates(Employee candidat) {
+            var employees = CtrlDbCtx.Instance.GetListEmployees();
+            return employees.FindAll(item => item.ParentId == candidat.Id);
+        }
         private decimal CalcFirstLevel(Employee candidat, DateTime dateFrom, DateTime dateTo) {
             decimal res = 0.0M;
-            foreach (var item in candidat.GetSubordinates()) {
+            foreach (var item in GetSubordinates(candidat)) {
                 res += CtrlWorkPayment.Instance.CalcWorkPayment(item, dateFrom, dateTo);
             }
             return res;
         }
         private decimal CalcAllLevels(Employee candidat, DateTime dateFrom, DateTime dateTo, decimal acc=0.0M) {
-            foreach (var item in candidat.GetSubordinates()) {
+            foreach (var item in GetSubordinates(candidat)) {
                 _= CalcAllLevels(item, dateFrom, dateTo, acc);
                 acc += CtrlWorkPayment.Instance.CalcWorkPayment(item, dateFrom, dateTo);
             }

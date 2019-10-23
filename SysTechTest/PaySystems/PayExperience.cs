@@ -12,7 +12,7 @@ namespace SysTechTest.PaySystems
         private readonly decimal m_percentInAYear;
         private readonly decimal m_maxPercent;
 
-        public PayExperience(decimal percentInAYear, decimal maxPercent) {
+        public PayExperience(decimal baseRate, decimal percentInAYear, decimal maxPercent) : base(baseRate) {
             m_percentInAYear = percentInAYear;
             m_maxPercent = maxPercent;
         }
@@ -37,7 +37,7 @@ namespace SysTechTest.PaySystems
                 throw new ArgumentNullException("PayExperience.Calc: parametr candidat is null.");
             }
             var dateOfEmployment = DateTimeUtils.DateFromStr(candidat.DateOfEmployment);
-            if (dateTo <= dateOfEmployment || candidat.BaseRate == decimal.Zero)
+            if (dateTo <= dateOfEmployment || BaseRate == decimal.Zero)
             {
                 return 0.0M;
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Windows.Input;
 using SysTechTest.dal;
 using SysTechTest.gui;
@@ -8,16 +7,16 @@ namespace SysTechTest.cmd
 {
     class CmdSave : ICommand
     {
-        private VMSettings m_vm;
+        private VMNotifyBase m_vm;
 
         public event EventHandler CanExecuteChanged;
-        public CmdSave(VMSettings vm) {
+        public CmdSave(VMNotifyBase vm) {
             m_vm = vm;
-            m_vm.PropertyPaymentChanged += Invoke;
+            m_vm.PropertyChanged += Invoke;
             CtrlDbCtx.Instance.OnCollectionChanged += Invoke;
         }
         ~CmdSave() {
-            m_vm.PropertyPaymentChanged -= Invoke;
+            m_vm.PropertyChanged -= Invoke;
             CtrlDbCtx.Instance.OnCollectionChanged -= Invoke;
         }
         private void Invoke(object sender, EventArgs e) {

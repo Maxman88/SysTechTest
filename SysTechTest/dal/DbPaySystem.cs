@@ -4,8 +4,9 @@
     public class PayParamBaseModel : BaseModel
     {
         private bool m_isEnabled = false;
-        public PayParamBaseModel(DbHelpers.PaySystem paySystem) {
-            PaySystemDescId = (int)paySystem;
+        private PaySystemDesc m_paySystemDesc;
+        public PayParamBaseModel(DbHelpers.PaySystem paySystemDesc) {
+            PaySystemDescId = (int)paySystemDesc;
         }
         public int Id { get; set; }
         public int PaySystemDescId { get; set; }
@@ -14,6 +15,8 @@
             get { return m_isEnabled; }
             set { m_isEnabled = value; OnPropertyChanged(); }
         }
+        public void SetPaySystemDesc(PaySystemDesc desc) => m_paySystemDesc = desc;
+        public PaySystemDesc GetPaySystemDescOrNull() => m_paySystemDesc;
     }
     public class PayBaseRateParam : PayParamBaseModel
     {

@@ -3,54 +3,79 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SysTechTest"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:gui="clr-namespace:SysTechTest.gui"
         mc:Ignorable="d"
         Language="ru"
-        Title="Расчёт заработной платы подразделения N" ScrollViewer.VerticalScrollBarVisibility="Auto">
+        MinHeight="440"
+        MaxHeight="440"
+        MaxWidth="480"
+        MinWidth="480"
+        Title="Расчёт заработной платы подразделения N" ScrollViewer.VerticalScrollBarVisibility="Auto" d:DesignWidth="577" d:DesignHeight="416">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded" >
             <i:InvokeCommandAction Command="{Binding CmdWindowLoaded}"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    <Grid>
+    <Grid Margin="0,0,0,-2">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <MenuItem Header="File">
-                <MenuItem Header="Закрыть приложение" Command="ApplicationCommands.Close"/>
+                <MenuItem Header="Закрыть приложение" Command="{Binding CmdCloseApp}"/>
             </MenuItem>
-            <MenuItem Header="Настройки" Command="{Binding CmdShowWndSettings}"/>
-
+            <MenuItem Header="Настройки" Command="{Binding CmdShowWndSettings}" IsEnabled="{Binding AdminHere}"/>
         </Menu>
-        <Grid x:Name="MainGrid" Grid.Row="1">
+        <Grid x:Name="MainGrid" Grid.Row="1" Visibility="{Binding MainVisibility}" >
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="ListEmplOrAdmins"/>
-                <ColumnDefinition x:Name="SelectedEmpl"/>
+                <ColumnDefinition x:Name="ListEmplOrAdmins" Width="auto"/>
+                <ColumnDefinition x:Name="SelectedEmpl" Width="auto"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <StackPanel x:Name="ListOfEmployees" Grid.Column="0" Grid.Row="0">
-                <TabControl  Height="Auto" MinHeight="150" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
-                    <TabItem x:Name="TabEmployee" Header="Сотрудники" >
-                        <Grid Background="#FFE5E5E5"/>
-                    </TabItem>
-                    <TabItem x:Name="TabAdmins" Header="Администраторы">
-                        <Grid Background="#FFE5E5E5"/>
-                    </TabItem>
+            <StackPanel x:Name="ListOfEmployees" Grid.Column="0" Grid.Row="0" 
+                        VerticalAlignment="Stretch" 
+                        Orientation="Vertical"
+                        Background="#FFE5E5E5" 
+                        DataContext="{Binding VMTreeViewEmployees}">
+                <Label Content="Сотрудники"/>
+                <TreeView 
+                    MinWidth="200"
+                    
+                    MinHeight="300"
+                          VerticalAlignment="Stretch"
+                          ItemsSource="{Binding EmployeesView}">
+                    
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate 
+                                    ItemsSource="{Binding Path=Childs}"
+                                    DataType="{x:Type gui:NodeEmployee}">
+                            <TextBlock Text="{Binding Owner.Name}"  />
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                </TreeView>
+                <Button Content="Добавить" HorizontalAlignment="Right" 
+                        Command="{Binding CmdAddEmployee}"
+                        VerticalAlignment="Center" Width="75"/>
+                <Button Content="Удалить" HorizontalAlignment="Right" 
+                        Command="{Binding CmdRemoveEmployee}"
 
-                </TabControl>
-                <DockPanel Height="25" DockPanel.Dock="Top" VerticalAlignment="Bottom">
-                    <Button Content="Button" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75"/>
-                </DockPanel>
-
+                        VerticalAlignment="Center" Width="75"/>
             </StackPanel>
-            <StackPanel x:Name="SelectedCommon" Grid.Column="1"  Grid.Row="0" Orientation="Vertical">
+            <StackPanel x:Name="SelectedCommon"
+                        DataContext="{Binding VMTreeViewEmployees}"
+                        
+                        Grid.Column="1"  Grid.Row="0" Orientation="Vertical">
                 <GroupBox x:Name="SelectedCommonInfo" Header="Общая информация">
-                    <Grid>
+                    <Grid IsEnabled="{Binding AdminHere}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1*"/>
                             <ColumnDefinition Width="1*"/>
@@ -66,11 +91,28 @@
                         <Label x:Name="emplLabelDate" Grid.Column="0" Grid.Row="1" Content="Дата трудоустройства"/>
                         <Label x:Name="emplLabelGroup" Grid.Column="0" Grid.Row="2" Content="Группа"/>
                         <Label x:Name="emplLabelChief" Grid.Column="0" Grid.Row="3" Content="Начальник"/>
-                        <TextBox    x:Name="emplName"  Grid.Column="1" Grid.Row="0" Text="Имя" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
-                        <DatePicker x:Name="emplDate"  Grid.Column="1" Grid.Row="1"/>
-                        <ComboBox   x:Name="emplGroup" Grid.Column="1" Grid.Row="2"/>
-                        <ComboBox   x:Name="emplChief" Grid.Column="1" Grid.Row="3"/>
-                        <Button x:Name="empButtonSave" Grid.ColumnSpan="2" Grid.Row="4" Margin="0,5" HorizontalAlignment="Right" Width="150" Content="Сохранить изменения"/>
+                        <TextBox    x:Name="emplName"  Grid.Column="1" Grid.Row="0" 
+                                    Text="{Binding Path=Selected.Name}"
+                                    VerticalAlignment="Stretch" 
+                                    VerticalContentAlignment="Center" 
+                                    HorizontalAlignment="Stretch" 
+                                    HorizontalContentAlignment="Left"/>
+                        <DatePicker x:Name="emplDate"  Grid.Column="1" Grid.Row="1"
+                                    SelectedDate="{Binding Selected.DateOfEmployment, StringFormat=\{0:d\}}" Height="26" VerticalAlignment="Top"/>
+                        <ComboBox   x:Name="emplGroup" Grid.Column="1" Grid.Row="2"
+                                    ItemsSource="{Binding GroupsView}"
+                                    SelectedValue="{Binding Path=Selected.GroupId}"
+                                    SelectedValuePath ="Id"
+                                    DisplayMemberPath="Name"/>
+                        <ComboBox   x:Name="emplChief" Grid.Column="1" Grid.Row="3"
+                                    ItemsSource="{Binding ListAvailableChiefs}"
+                                    SelectedValue="{Binding Path=Selected.ParentId}"
+                                    SelectedValuePath ="Id"
+                                    DisplayMemberPath="Name"/>
+                        <Button x:Name="empButtonSave" Grid.ColumnSpan="2" Grid.Row="4" Margin="0,5" 
+                                HorizontalAlignment="Right" Width="150" 
+                                Command="{Binding CmdSave}"
+                                Content="Сохранить изменения"/>
                     </Grid>
 
                 </GroupBox>
@@ -87,10 +129,16 @@
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" Content="Логин"/>
                         <Label Grid.Column="0" Grid.Row="1" Content="Пароль"/>
-                        <TextBox Grid.Column="1" Grid.Row="0" Text="логин" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
-                        <Button Grid.Column="3" Grid.Row="0" Content="изменить"/>
-                        <PasswordBox Grid.Column="1" Grid.Row="1" Password="555" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
-                        <Button Grid.Column="3" Grid.Row="1" Content="изменить"/>
+                        <TextBox Grid.Column="1" Grid.Row="0" 
+                                 Text="{Binding Path=Selected.Login}"
+                                 IsReadOnly="True"
+                                 VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
+                        <Button Grid.Column="3" Grid.Row="0" Grid.RowSpan="2" 
+                                Command="{Binding CmdChangeLoginPass}"
+                                Content="изменить"/>
+                        <PasswordBox Grid.Column="1" Grid.Row="1" Password="555" 
+                                     IsEnabled="False"
+                                     VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="Предварительный расчёт заработной платы">
@@ -107,10 +155,21 @@
                         </Grid.RowDefinitions>
                         <Label Grid.Column="0" Grid.Row="0" Content="Начало периода"/>
                         <Label Grid.Column="0" Grid.Row="1" Content="Конец периода"/>
-                        <DatePicker Grid.Column="1" Grid.Row="0"/>
-                        <DatePicker Grid.Column="1" Grid.Row="1"/>
-                        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Margin="0,5,0,5" HorizontalAlignment="Right" Width="150" Content="Рассчитать"/>
-                        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" HorizontalAlignment="Right" Width="150" Content="Рассчитать по штату"/>
+                        <DatePicker Grid.Column="1" Grid.Row="0" 
+                                    x:Name="date1"
+                                    SelectedDate="{Binding DateBeginOfCalc, StringFormat=\{0:d\}}"/>
+                        <DatePicker Grid.Column="1" Grid.Row="1"
+                                    x:Name="date2"
+                                    SelectedDate="{Binding DateEndOfCalc, StringFormat=\{0:d\}}"/>
+                        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Margin="0,5,0,5" 
+                                Command="{Binding CmdCalcPayroll}"
+                                HorizontalAlignment="Right" Width="150" 
+                                Content="Рассчитать"/>
+                        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" 
+                                Command="{Binding CmdCalcPayrollAll}"
+                                Visibility="{Binding AdminVisibility}"
+                                HorizontalAlignment="Right" Width="150" 
+                                Content="Рассчитать по штату"/>
 
                     </Grid>
                 </GroupBox>

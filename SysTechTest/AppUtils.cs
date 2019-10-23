@@ -42,7 +42,7 @@ namespace SysTechTest
     }
     public static class DateTimeUtils
     {
-        private const string DateTimeFormat = "dd.MM.yyyy";
+        private const string DateTimeFormat = "dd.MM.yyyy h:mm:ss";
         public static DateTime DateFromStr(string s) => DateTime.ParseExact(s, DateTimeFormat, CultureInfo.InvariantCulture);
         public static string DateToStr(DateTime d) => d.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
     }
